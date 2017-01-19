@@ -1,4 +1,4 @@
-Software Repository for colaboration between Jared Stewart and Scott Visser
+Software Repository for colaboration between Jerad Stewart and Scott Visser
 
 general git steps:
 1. import repository to pwd
