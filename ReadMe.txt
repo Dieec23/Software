@@ -10,6 +10,7 @@ general git steps:
 	git fetch
 
 4. merge remote changes
+	git merge
 
 5. add/commit your changes
 
