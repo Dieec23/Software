@@ -1,3 +1,5 @@
+#pip install openpyxl
+from penpyxl import Workbook #excel
 import argparse
 import os
 import json
@@ -132,6 +134,20 @@ def checkDuration(combined_data, settings):
         for i in range(0, len(contactDur)):
             logging.debug("Contact {}:  Start-time: {}  Duration: {}".format(i, float(contactDur[i][0]), float(contactDur[i][1])))
 
+    #return a dictionary with all the important contact information
+    return contactDur
+
+def createExcel(contacts, settings):
+    wb = Workbook(guess_types=True)
+
+    #grab active worksheet
+    ws = wb.active
+    ws.title = "Title"
+
+    #save overwrites existing file without warning
+    wb.save("test.xlsx")
+
+
 def process(args):
 
     #load JSON
@@ -144,7 +160,10 @@ def process(args):
     checkForContacts(combined_data, settings)
 
     #find streaks of continuous contact
-    checkDuration(combined_data, settings)
+    contacts = checkDuration(combined_data, settings)
+
+    #export data to excelsheet
+    createExcel(contacts, settings)
 
 def main():
 
