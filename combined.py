@@ -76,18 +76,35 @@ def checkForContacts(combined_data, settings):
                 current_data["contact"] = False
 
 def checkDuration(combined_data, settings):
-
     contactCount = 0
     contactList = []  # static list of contact times
     contactDur = {}   # mutible dictionary of contact times and durations
 
-    logging.info("Checking array for potential contacts")
     # go through all arrays
     for array in range(1, settings["numArrays"]+1):
         # and all readings in each array
         for reading in combined_data[array]["sample"]:
+#	    print combined_data[array]["sample"][reading]["contact"]
             current_data = combined_data[array]["sample"][reading]
+	    # if current reading is a contact]
             if current_data["contact"] == True:
+
+		#PSEUDOCODE: establish base of contact chain and pass array number and start timestamp forward
+		# whithin loop, once first contact == true event found: 
+		    # current_data["chain_base"] = True
+		    # current_data["chain_begin_sample"] = reading
+		    # current_data["chain_begin_time"] = current_data["time"]
+		    # current_data["chain_begin_array"] = array
+		    # current_data["chain_end_time"] = current_data["time"]
+		    # current_data["chain_end_array"] = array
+
+		# continue looping, for each contact == true sample, check for a previous contact == true sample within window of time (same array first, then neigboring arrays)
+		# if previous contact == true is found:
+		    # current_data["chain_begin_time"] = combined_data[array<+-1>]["sample"][<reading# found in loop>]["chain_begin_time"]
+		    # current_data["chain_begin_array"] = combined_data[array<+-1>]["sample"][<reading# found in loop>]["chain_begin_array"]
+		    # combined_data[current_data["chain_begin_array"]]["sample"][current_data["chain_begin_sample"]]["chain_end_time"] = current_data["time"]
+		    # combined_data[current_data["chain_begin_array"]]["sample"][current_data["chain_begin_sample"]]["chain_end_array"] = array
+
                     contactList.append(float(current_data["time"]))
                     logging.info("Checking contact durations")
 
