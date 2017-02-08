@@ -1,9 +1,15 @@
 #pip install openpyxl
-from penpyxl import Workbook #excel
+from openpyxl import Workbook #excel
 import argparse
 import os
 import json
 import logging
+
+def srange(start, stop, step):
+    r = start
+    while r < stop:
+        yield r
+	r += step
 
 def combineData(directories):
 
@@ -82,63 +88,69 @@ def checkDuration(combined_data, settings):
     contactList = []  # static list of contact times
     contactDur = {}   # mutible dictionary of contact times and durations
 
-    # go through all arrays
+    # go through each  array to build chains
     for array in range(1, settings["numArrays"]+1):
-        # and all readings in each array
+        # all readings in each array
         for reading in combined_data[array]["sample"]:
-#	    print combined_data[array]["sample"][reading]["contact"]
             current_data = combined_data[array]["sample"][reading]
-	    # if current reading is a contact]
+	    # if current reading is a contact
             if current_data["contact"] == True:
 
-		#PSEUDOCODE: establish base of contact chain and pass array number and start timestamp forward
-		# whithin loop, once first contact == true event found: 
-		    # current_data["chain_base"] = True
-		    # current_data["chain_begin_sample"] = reading
-		    # current_data["chain_begin_time"] = current_data["time"]
-		    # current_data["chain_begin_array"] = array
-		    # current_data["chain_end_time"] = current_data["time"]
-		    # current_data["chain_end_array"] = array
+		#check previous samples
+		i = 1
+		j = 1
+		k = 1
+		while (float(current_data["time"]) - float(combined_data[array]["sample"][unicode(int(reading)-i)]["time"]) <= .30):
+		    prev_data = combined_data[array]["sample"][unicode(int(reading)-i)]
+		    if prev_data["contact"] == True:
+		        current_data["chain_begin_time"] = prev_data["chain_begin_time"]
+		        current_data["chain_begin_array"] = prev_data["chain_begin_array"]
+		        combined_data[current_data["chain_begin_array"]]["sample"][current_data["chain_begin_sample"]]["chain_end_time"] = current_data["time"]
+		        combined_data[current_data["chain_begin_array"]]["sample"][current_data["chain_begin_sample"]]["chain_end_array"] = array
+			break
+		    elif float(current_data["time"]) - float(combined_data[array]["sample"][unicode(int(reading)-i-1)]["time"]) > .30 and prev_data["contact"] == False:
+	
+			#check previous samples in other arrays...
+			#while (float(current_data["time"]) - float(combined_data[(array+1)%4]["sample"][reading-j]["time"] <= .30):
+			#    prev_data = combined_data[(array+1)%4]["sample"][reading-j]
+			#    if prev_data["contact"] == True:
+		        #        current_data["chain_begin_time"] = prev_data["chain_begin_time"]
+		        #        current_data["chain_begin_array"] = prev_data["chain_begin_array"]
+		        #	combined_data[current_data["chain_begin_array"]]["sample"][current_data["chain_begin_sample"]]["chain_end_time"] = current_data["time"]
+		        #	combined_data[current_data["chain_begin_array"]]["sample"][current_data["chain_begin_sample"]]["chain_end_array"] = array	
+			#    elif float(current_data["time"]) - float(combined_data[(array+1)%4]["sample"][reading-j-1]["time"]) > .30 and prev_data["contact"] == False:
+			#	while (float(current_data["time"]) - float(combined_data[array]["sample"][reading-i]["time"]) <= .30):
+			#	    prev_data = combined_data[array]["sample"][reading-i]
+			#	    if prev_data["contact"] == True:
+			#	        current_data["chain_begin_time"] = prev_data["chain_begin_time"]
+			#	        current_data["chain_begin_array"] = prev_data["chain_begin_array"]
+			#	        combined_data[current_data["chain_begin_array"]]["sample"][current_data["chain_begin_sample"]]["chain_end_time"] = current_data["time"]
+			#	        combined_data[current_data["chain_begin_array"]]["sample"][current_data["chain_begin_sample"]]["chain_end_array"] = array
+			#	    else:
+			#		k += 1
+			#    else:
+			#	j += 1
+			
+			#establish as base of next chain
+			current_data["chain_base"] = True
+		        current_data["chain_begin_sample"] = reading
+		        current_data["chain_begin_time"] = current_data["time"]
+		        current_data["chain_begin_array"] = array
+		        current_data["chain_end_time"] = current_data["time"]
+		        current_data["chain_end_array"] = array
+		    else:
+		        i += 1
 
-		# continue looping, for each contact == true sample, check for a previous contact == true sample within window of time (same array first, then neigboring arrays)
-		# if previous contact == true is found:
-		    # current_data["chain_begin_time"] = combined_data[array<+-1>]["sample"][<reading# found in loop>]["chain_begin_time"]
-		    # current_data["chain_begin_array"] = combined_data[array<+-1>]["sample"][<reading# found in loop>]["chain_begin_array"]
-		    # combined_data[current_data["chain_begin_array"]]["sample"][current_data["chain_begin_sample"]]["chain_end_time"] = current_data["time"]
-		    # combined_data[current_data["chain_begin_array"]]["sample"][current_data["chain_begin_sample"]]["chain_end_array"] = array
-
-                    contactList.append(float(current_data["time"]))
-                    logging.info("Checking contact durations")
-
-        contactList.sort()
-        print contactList
-        #initialize first contact     #(I know there is a more efficient way to implement
-        time = [contactList[0],0.0] # this, however I am still learning python and
-        contactDur[0] = time    # it is a work in progress...)
-        contactDur[0][1] = 0.0
-        contactCount += 1   # this also assumes there IS a contact
-
-        # generate list of initial contact times, and corresponding durations
-        for i in range(1,len(contactList)):
-            if (contactList[i] == (contactList[i-1] + 0.2)):
-                contactDur[contactCount-1][1] += 0.2
-            else:
-                time = [contactList[i], 0.0]
-                contactDur[contactCount] = time
-                contactDur[contactCount][1] = 0.0
-                contactCount += 1
 
         logging.debug("Total number of Samples: {}".format(settings["sampleCount"]))
         logging.debug("Total number of Contacts: {}".format(contactCount))
 
-        for i in range(0, len(contactDur)):
-            logging.debug("Contact {}:  Start-time: {}  Duration: {}".format(i, float(contactDur[i][0]), float(contactDur[i][1])))
 
     #return a dictionary with all the important contact information
     return contactDur
 
 def createExcel(contacts, settings):
-    wb = Workbook(guess_types=True)
+    wb = Workbook()
 
     #grab active worksheet
     ws = wb.active
