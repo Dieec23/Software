@@ -5,12 +5,6 @@ import os
 import json
 import logging
 
-def srange(start, stop, step):
-    r = start
-    while r < stop:
-        yield r
-	r += step
-
 def combineData(directories):
 
     combined_data = {}
@@ -113,34 +107,13 @@ def checkDuration(combined_data, settings):
 		    prev_data = combined_data[array]["sample"][unicode(int(reading)-i)]
 		    if prev_data["contact"] == True:
 			current_data["chain_begin_sample"] = prev_data["chain_begin_sample"]
-		        current_data["chain_begin_time"] = float(prev_data["chain_begin_time"])
-		        current_data["chain_begin_array"] = prev_data["chain_begin_array"]
+		    	current_data["chain_begin_time"] = float(prev_data["chain_begin_time"])
+		    	current_data["chain_begin_array"] = prev_data["chain_begin_array"]
 		        combined_data[int(current_data["chain_begin_array"])]["sample"][unicode(current_data["chain_begin_sample"])]["chain_end_time"] = float(current_data["time"])
 		        combined_data[int(current_data["chain_begin_array"])]["sample"][unicode(current_data["chain_begin_sample"])]["chain_end_array"] = array
 			break
 		    elif float(current_data["time"]) - float(combined_data[array]["sample"][unicode(int(reading)-i-1)]["time"]) > .30 and prev_data["contact"] == False:
-	
-			#check previous samples in other arrays...
-			#while (float(current_data["time"]) - float(combined_data[(array+1)%4]["sample"][reading-j]["time"] <= .30):
-			#    prev_data = combined_data[(array+1)%4]["sample"][reading-j]
-			#    if prev_data["contact"] == True:
-		        #        current_data["chain_begin_time"] = prev_data["chain_begin_time"]
-		        #        current_data["chain_begin_array"] = prev_data["chain_begin_array"]
-		        #	combined_data[current_data["chain_begin_array"]]["sample"][current_data["chain_begin_sample"]]["chain_end_time"] = current_data["time"]
-		        #	combined_data[current_data["chain_begin_array"]]["sample"][current_data["chain_begin_sample"]]["chain_end_array"] = array	
-			#    elif float(current_data["time"]) - float(combined_data[(array+1)%4]["sample"][reading-j-1]["time"]) > .30 and prev_data["contact"] == False:
-			#	while (float(current_data["time"]) - float(combined_data[array]["sample"][reading-i]["time"]) <= .30):
-			#	    prev_data = combined_data[array]["sample"][reading-i]
-			#	    if prev_data["contact"] == True:
-			#	        current_data["chain_begin_time"] = prev_data["chain_begin_time"]
-			#	        current_data["chain_begin_array"] = prev_data["chain_begin_array"]
-			#	        combined_data[current_data["chain_begin_array"]]["sample"][current_data["chain_begin_sample"]]["chain_end_time"] = current_data["time"]
-			#	        combined_data[current_data["chain_begin_array"]]["sample"][current_data["chain_begin_sample"]]["chain_end_array"] = array
-			#	    else:
-			#		k += 1
-			#    else:
-			#	j += 1
-			
+				
 			#establish as base of next chain
 			contactCount += 1
 			current_data["chain_base"] = True
