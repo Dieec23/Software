@@ -77,11 +77,21 @@ def checkForContacts(combined_data, settings):
         for reading in combined_data[array]["sample"]:
 
             current_data = combined_data[array]["sample"][reading]
+
             if float(current_data["dist"]) <= settings["RANGE"] and settings["HUMAN_TEMP_MIN"] <= float(current_data["temp"]) <= settings["HUMAN_TEMP_MAX"]:
                     logging.debug("Contact Criteria met in array {}, reading {}: {}".format(array, reading, current_data))
                     current_data["contact"] = True
             else:
                 current_data["contact"] = False
+
+	    current_data["chain_base"] = False
+	    current_data["chain_begin_time"] = 0.00
+	    current_data["chain_begin_array"] = array
+	    current_data["chain_end_time"] = 0.00
+	    current_data["chain_end_array"] = array
+	    current_data["chain_begin_sample"] = 0
+
+    print combined_data[1]["sample"][unicode(20)]["chain_end_time"]	
 
 def checkDuration(combined_data, settings):
     contactCount = 0
@@ -95,18 +105,17 @@ def checkDuration(combined_data, settings):
             current_data = combined_data[array]["sample"][reading]
 	    # if current reading is a contact
             if current_data["contact"] == True:
-
 		#check previous samples
 		i = 1
-		j = 1
-		k = 1
+		#j = 1
+		#k = 1
 		while (float(current_data["time"]) - float(combined_data[array]["sample"][unicode(int(reading)-i)]["time"]) <= .30):
 		    prev_data = combined_data[array]["sample"][unicode(int(reading)-i)]
 		    if prev_data["contact"] == True:
-		        current_data["chain_begin_time"] = prev_data["chain_begin_time"]
+		        current_data["chain_begin_time"] = float(prev_data["chain_begin_time"])
 		        current_data["chain_begin_array"] = prev_data["chain_begin_array"]
-		        combined_data[current_data["chain_begin_array"]]["sample"][current_data["chain_begin_sample"]]["chain_end_time"] = current_data["time"]
-		        combined_data[current_data["chain_begin_array"]]["sample"][current_data["chain_begin_sample"]]["chain_end_array"] = array
+		        combined_data[int(current_data["chain_begin_array"])]["sample"][unicode(current_data["chain_begin_sample"])]["chain_end_time"] = float(current_data["time"])
+		        combined_data[int(current_data["chain_begin_array"])]["sample"][unicode(current_data["chain_begin_sample"])]["chain_end_array"] = array
 			break
 		    elif float(current_data["time"]) - float(combined_data[array]["sample"][unicode(int(reading)-i-1)]["time"]) > .30 and prev_data["contact"] == False:
 	
@@ -138,6 +147,7 @@ def checkDuration(combined_data, settings):
 		        current_data["chain_begin_array"] = array
 		        current_data["chain_end_time"] = current_data["time"]
 		        current_data["chain_end_array"] = array
+			break
 		    else:
 		        i += 1
 
