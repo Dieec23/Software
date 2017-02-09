@@ -91,7 +91,7 @@ def checkForContacts(combined_data, settings):
 	    current_data["chain_end_array"] = array
 	    current_data["chain_begin_sample"] = 0
 
-    print combined_data[1]["sample"][unicode(20)]["chain_end_time"]	
+#    print combined_data[1]["sample"][unicode(20)]["chain_end_time"]	
 
 def checkDuration(combined_data, settings):
     contactCount = 0
@@ -112,6 +112,7 @@ def checkDuration(combined_data, settings):
 		while (float(current_data["time"]) - float(combined_data[array]["sample"][unicode(int(reading)-i)]["time"]) <= .30):
 		    prev_data = combined_data[array]["sample"][unicode(int(reading)-i)]
 		    if prev_data["contact"] == True:
+			current_data["chain_begin_sample"] = prev_data["chain_begin_sample"]
 		        current_data["chain_begin_time"] = float(prev_data["chain_begin_time"])
 		        current_data["chain_begin_array"] = prev_data["chain_begin_array"]
 		        combined_data[int(current_data["chain_begin_array"])]["sample"][unicode(current_data["chain_begin_sample"])]["chain_end_time"] = float(current_data["time"])
@@ -141,6 +142,7 @@ def checkDuration(combined_data, settings):
 			#	j += 1
 			
 			#establish as base of next chain
+			contactCount += 1
 			current_data["chain_base"] = True
 		        current_data["chain_begin_sample"] = reading
 		        current_data["chain_begin_time"] = current_data["time"]
@@ -151,6 +153,10 @@ def checkDuration(combined_data, settings):
 		    else:
 		        i += 1
 
+        for reading in combined_data[array]["sample"]:
+            current_data = combined_data[array]["sample"][reading]
+	    if current_data["contact"] == True:
+		logging.debug("Sample: {}, bt: {} et: {}, bs:{}".format(reading, current_data["chain_begin_time"], current_data["chain_end_time"], current_data["chain_begin_sample"]))
 
         logging.debug("Total number of Samples: {}".format(settings["sampleCount"]))
         logging.debug("Total number of Contacts: {}".format(contactCount))
