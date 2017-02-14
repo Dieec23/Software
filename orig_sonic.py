@@ -114,9 +114,11 @@ def cSetUp():
 def measure(TRIGGER, ECHO):
   # This function measures a distance
   GPIO.output(TRIGGER, True)
+  print('waiting for trigger')
   # Wait 10us
   time.sleep(0.0001)
   GPIO.output(TRIGGER, False)
+  print('trigger rec')
   start = time.time()
   while GPIO.input(ECHO)==0:
     start = time.time()
@@ -132,7 +134,6 @@ def measure(TRIGGER, ECHO):
 def measure_average(GPIO_TRIGGER, GPIO_ECHO):
   # This function takes 3 measurements and
   # returns the smallest distance.
-  print('measure_average')
   distance1=measure(GPIO_TRIGGER, GPIO_ECHO)
   print("Distance1 : {0:5.1f}".format(distance1))
   time.sleep(0.0001)
