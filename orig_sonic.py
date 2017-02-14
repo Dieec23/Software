@@ -20,6 +20,7 @@ import pigpio
 # -----------------------
 # Globals
 # -----------------------
+GPIO.cleanup()
 # Use BCM GPIO references
 # instead of physical pin numbers
 GPIO.setmode(GPIO.BCM)
