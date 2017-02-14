@@ -183,8 +183,8 @@ def saveData(file_name, json_data):
   # save json_data to file
   #  data = json_data.decode("utf8")
   with open(file_name, "w") as my_file:
-    #  my_file.write(json.dumps(json_data))
-    json.dumps(json_data, my_file)
+    my_file.write(json.dumps(json_data))
+    # json.dumps(json_data, my_file)
 
   return 1
 
