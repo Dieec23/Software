@@ -132,7 +132,7 @@ def measure(TRIGGER, ECHO):
 def measure_average(GPIO_TRIGGER, GPIO_ECHO):
   # This function takes 3 measurements and
   # returns the smallest distance.
-
+  print('measure_average')
   distance1=measure(GPIO_TRIGGER, GPIO_ECHO)
   print("Distance1 : {0:5.1f}".format(distance1))
   time.sleep(0.0001)
