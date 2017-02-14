@@ -114,14 +114,12 @@ def cSetUp():
 def measure(TRIGGER, ECHO):
   # This function measures a distance
   GPIO.output(TRIGGER, True)
-  print('waiting for trigger')
   # Wait 10us
   time.sleep(0.0001)
   GPIO.output(TRIGGER, False)
-  print('trigger rec')
-  start = time.time()
   while GPIO.input(ECHO)==0:
     start = time.time()
+    print('waiting for echo')
 
   while GPIO.input(ECHO)==1:
     stop = time.time()
