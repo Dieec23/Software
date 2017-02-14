@@ -207,6 +207,7 @@ try:
   while True:
     # Get current time
     now = datetime.now()
+    print(str(now))
     sampleTime = now.strftime("%H%M%S%f")
     if (int(sampleTime) - int(initTime) > 12000000):
       break
@@ -231,9 +232,7 @@ try:
 
     json_data['sample'][format(readingNum)] = getData(now, distance, temperature)
     saveData(file_name, json_data)
-    print('saved data')
     readingNum += 1
-    print('moving to next reading')
     #  time.sleep(.25)
 
 except KeyboardInterrupt:
