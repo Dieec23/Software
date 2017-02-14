@@ -18,6 +18,69 @@ import getopt
 import pigpio
 
 # -----------------------
+# Globals
+# -----------------------
+# Use BCM GPIO references
+# instead of physical pin numbers
+GPIO.setmode(GPIO.BCM)
+
+# Define GPIO to use on Pi
+GPIO1_TRIGGER = 23
+GPIO1_ECHO    = 24
+GPIO2_TRIGGER = 22
+GPIO2_ECHO    = 25
+
+# Set pins as output and input
+GPIO.setup(GPIO1_TRIGGER,GPIO.OUT)  # Trigger
+GPIO.setup(GPIO1_ECHO,GPIO.IN)      # Echo
+GPIO.setup(GPIO2_TRIGGER, GPIO.OUT)
+GPIO.setup(GPIO2_ECHO, GPIO.IN)
+
+# Set trigger to False (Low)
+GPIO.output(GPIO1_TRIGGER, False)
+GPIO.output(GPIO2_TRIGGER, False)
+
+# OMRON definitions
+i2c_bus = smbus.SMBus(1)
+OMRON_1 = 0x0a
+OMRON_BUFFER_LENGTH = 35
+temp_data = [0]*OMRON_BUFFER_LENGTH
+
+# PigPio defaults
+pi = pigpio.pi()
+version = pi.get_pigpio_version()
+# handle = pi.i2c_open(1, 0x0a)
+
+# Speed of sound in cm/s at temperature
+temperature = 20
+speedSound = 33100 + (0.6*temperature)
+
+# Camera variables
+camera = PiCamera()
+camera.rotation = 180
+camera.resolution = (1024, 768)
+camera.start_preview()
+#  time.sleep(1)
+
+# Sampling parameters
+readingNum = 0
+now = datetime.now()
+initTime = now.strftime("%H%M%S%f")
+curTime = initTime
+print(initTime)
+
+#  JSON storage for variables
+json_data = {} # Dictionary
+json_data['sample'] = {}
+json_data['initialTime'] = format(initTime)
+json_data['sampleRate'] = '.2'
+json_data['arrayName'] = '1'
+
+
+# Allow module to settle
+#  time.sleep(0.5)
+
+# -----------------------
 # Function Definitions
 # -----------------------
 def POST():
@@ -48,18 +111,17 @@ def cSetUp():
 
   return path
 
-def measure():
+def measure(TRIGGER, ECHO):
   # This function measures a distance
-  GPIO.output(GPIO_TRIGGER, True)
+  GPIO.output(TRIGGER, True)
   # Wait 10us
   time.sleep(0.0001)
-  GPIO.output(GPIO_TRIGGER, False)
+  GPIO.output(TRIGGER, False)
   start = time.time()
-
-  while GPIO.input(GPIO_ECHO)==0:
+  while GPIO.input(ECHO)==0:
     start = time.time()
 
-  while GPIO.input(GPIO_ECHO)==1:
+  while GPIO.input(ECHO)==1:
     stop = time.time()
 
   elapsed = stop-start
@@ -67,17 +129,17 @@ def measure():
 
   return distance
 
-def measure_average():
+def measure_average(GPIO_TRIGGER, GPIO_ECHO):
   # This function takes 3 measurements and
   # returns the smallest distance.
 
-  distance1=measure()
+  distance1=measure(GPIO_TRIGGER, GPIO_ECHO)
   print("Distance1 : {0:5.1f}".format(distance1))
   time.sleep(0.0001)
-  distance2=measure()
+  distance2=measure(GPIO_TRIGGER, GPIO_ECHO)
   print("Distance2 : {0:5.1f}".format(distance2))
   time.sleep(0.0001)
-  distance3=measure()
+  distance3=measure(GPIO_TRIGGER, GPIO_ECHO)
   print("Distance3 : {0:5.1f}".format(distance3))
 
 
@@ -128,69 +190,6 @@ def saveData(file_name, json_data):
   return 1
 
 # -----------------------
-# Globals
-# -----------------------
-POST()
-
-# Use BCM GPIO references
-# instead of physical pin numbers
-GPIO.setmode(GPIO.BCM)
-
-# Define GPIO to use on Pi
-GPIO_TRIGGER = 23
-GPIO_ECHO    = 24
-
-# OMRON definitions
-i2c_bus = smbus.SMBus(1)
-OMRON_1 = 0x0a
-OMRON_BUFFER_LENGTH = 35
-temp_data = [0]*OMRON_BUFFER_LENGTH
-
-# PigPio defaults
-pi = pigpio.pi()
-version = pi.get_pigpio_version()
-# handle = pi.i2c_open(1, 0x0a)
-
-# Speed of sound in cm/s at temperature
-temperature = 20
-speedSound = 33100 + (0.6*temperature)
-
-# Camera variables
-camera = PiCamera()
-camera.rotation = 180
-camera.resolution = (1024, 768)
-camera.start_preview()
-#  time.sleep(1)
-
-# Sampling parameters
-readingNum = 0
-now = datetime.now()
-initTime = now.strftime("%H%M%S%f")
-curTime = initTime
-print(initTime)
-
-#  JSON storage for variables
-json_data = {} # Dictionary
-json_data['sample'] = {}
-json_data['initialTime'] = format(initTime)
-json_data['sampleRate'] = '.2'
-json_data['arrayName'] = '1'
-
-# Log File
-file_name = setUp()
-file_path = cSetUp()
-
-# Set pins as output and input
-GPIO.setup(GPIO_TRIGGER,GPIO.OUT)  # Trigger
-GPIO.setup(GPIO_ECHO,GPIO.IN)      # Echo
-
-# Set trigger to False (Low)
-GPIO.output(GPIO_TRIGGER, False)
-
-# Allow module to settle
-#  time.sleep(0.5)
-
-# -----------------------
 # Main Script
 # -----------------------
 
@@ -199,6 +198,12 @@ GPIO.output(GPIO_TRIGGER, False)
 # GPIO cleanup function. This will also prevent
 # the user seeing lots of unnecessary error
 # messages.
+POST()
+
+# Log File
+file_name = setUp()
+file_path = cSetUp()
+
 try:
   while True:
     # Get current time
@@ -209,19 +214,21 @@ try:
     if (int(sampleTime) - int(curTime) >= 60):
       curTime = now.strftime("%H%M%S%f")
       picture(file_path)
-    distance = measure_average()
+    distance = measure_average(GPIO1_TRIGGER, GPIO1_ECHO)
+    distance1 = measure_average(GPIO2_TRIGGER, GPIO2_ECHO)
     handle = pi.i2c_open(1, 0x0a)
     result = i2c_bus.write_byte(OMRON_1, 0x4c)
     (bytes_read, temp_data) = pi.i2c_read_device(handle, len(temp_data))
     pi.i2c_close(handle)
     print("Sample Time: " + now.strftime("%H%M%S%f"))
     print("Lowest Distance : {0:5.1f}".format(distance))
+    print("Lowest Distance : {0:5.2f}".format(distance1))
     print("Bytes read from Omron D6T: " + str(bytes_read))
     print("Data read from Omron D6T : ")
     for x in range(bytes_read):
       print(temp_data[x])
 
-    json_data['sample'][format(readingNum)] = getData(now, distance, temp_data)
+    json_data['sample'][format(readingNum)] = getData(now, distance, str(temp_data))
     saveData(file_name, json_data)
     readingNum += 1
     #  time.sleep(.25)
