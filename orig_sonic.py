@@ -183,9 +183,8 @@ def saveData(file_name, json_data):
   # save json_data to file
   #  data = json_data.decode("utf8")
   with open(file_name, "w") as my_file:
-    my_file.write(json.dumps(json_data))
-    #  json.dump(data.encode("utf8"), my_file)
-    my_file.flush()
+    #  my_file.write(json.dumps(json_data))
+    json.dumps(json_data, my_file)
 
   return 1
 
@@ -226,9 +225,10 @@ try:
     print("Bytes read from Omron D6T: " + str(bytes_read))
     print("Data read from Omron D6T : ")
     for x in range(bytes_read):
+      temperature = str(temp_data[x])
       print(temp_data[x])
 
-    json_data['sample'][format(readingNum)] = getData(now, distance, str(temp_data))
+    json_data['sample'][format(readingNum)] = getData(now, distance, temperature)
     saveData(file_name, json_data)
     readingNum += 1
     #  time.sleep(.25)
