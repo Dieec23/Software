@@ -208,7 +208,7 @@ try:
     # Get current time
     now = datetime.now()
     sampleTime = now.strftime("%H%M%S%f")
-    print(str(sampleTime))
+    print(str(now.strftime("%H:%M:%S.%f")))
     if (int(sampleTime) - int(initTime) > 12000000):
       break
     if (int(sampleTime) - int(curTime) >= 60):
