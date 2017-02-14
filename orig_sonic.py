@@ -209,6 +209,7 @@ try:
     now = datetime.now()
     sampleTime = now.strftime("%H%M%S%f")
     print(str(now.strftime("%H:%M:%S.%f")))
+    # TODO: Fix time so script doesn't end early!
     if (int(sampleTime) - int(initTime) > 12000000):
       break
     if (int(sampleTime) - int(curTime) >= 60):
@@ -217,6 +218,7 @@ try:
     distance = measure_average(GPIO1_TRIGGER, GPIO1_ECHO)
     distance1 = measure_average(GPIO2_TRIGGER, GPIO2_ECHO)
     if (int(sampleTime) - int(initTime) > 25):
+      # TODO: At times OMRON returns -81 bits read
       handle = pi.i2c_open(1, 0x0a)
       result = i2c_bus.write_byte(OMRON_1, 0x4c)
       (bytes_read, temp_data) = pi.i2c_read_device(handle, len(temp_data))
