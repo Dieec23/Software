@@ -49,7 +49,7 @@ OMRON_1 = 0x0a
 OMRON_BUFFER_LENGTH = 35
 temp_data = [0]*OMRON_BUFFER_LENGTH
 handle = pi.i2c_open(1, 0x0a)
-pi.i2c_close(1, OMRON_1)
+# pi.i2c_close(1, OMRON_1)
 
 # Speed of sound in cm/s at temperature
 temperature = 20
