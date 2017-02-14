@@ -40,6 +40,9 @@ GPIO.setup(GPIO2_ECHO, GPIO.IN)
 GPIO.output(GPIO1_TRIGGER, False)
 GPIO.output(GPIO2_TRIGGER, False)
 
+# PigPio defaults
+pi = pigpio.pi()
+version = pi.get_pigpio_version()
 # OMRON definitions
 i2c_bus = smbus.SMBus(1)
 OMRON_1 = 0x0a
@@ -47,11 +50,6 @@ OMRON_BUFFER_LENGTH = 35
 temp_data = [0]*OMRON_BUFFER_LENGTH
 handle = pi.i2c_open(1, 0x0a)
 pi.i2c_close(OMRON_1, OMRON_BUFFER_LENGTH)
-
-# PigPio defaults
-pi = pigpio.pi()
-version = pi.get_pigpio_version()
-# handle = pi.i2c_open(1, 0x0a)
 
 # Speed of sound in cm/s at temperature
 temperature = 20
