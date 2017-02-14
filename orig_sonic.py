@@ -231,7 +231,9 @@ try:
 
     json_data['sample'][format(readingNum)] = getData(now, distance, temperature)
     saveData(file_name, json_data)
+    print('saved data')
     readingNum += 1
+    print('moving to next reading')
     #  time.sleep(.25)
 
 except KeyboardInterrupt:
