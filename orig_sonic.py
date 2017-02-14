@@ -120,7 +120,7 @@ def measure(TRIGGER, ECHO):
   GPIO.output(TRIGGER, False)
   while GPIO.input(ECHO)==0:
     start = time.time()
-    print('waiting for echo')
+    # print('waiting for echo')
 
   while GPIO.input(ECHO)==1:
     stop = time.time()
