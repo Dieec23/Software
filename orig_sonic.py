@@ -215,7 +215,7 @@ try:
       picture(file_path)
     distance = measure_average(GPIO1_TRIGGER, GPIO1_ECHO)
     distance1 = measure_average(GPIO2_TRIGGER, GPIO2_ECHO)
-    if (int(sampleTime) - int(initTime) > 25)
+    if (int(sampleTime) - int(initTime) > 25):
       handle = pi.i2c_open(1, 0x0a)
       result = i2c_bus.write_byte(OMRON_1, 0x4c)
       (bytes_read, temp_data) = pi.i2c_read_device(handle, len(temp_data))
