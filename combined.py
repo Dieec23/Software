@@ -17,11 +17,11 @@ def combineData(directories):
             combined_data[int(data["arrayName"])] = data
     return combined_data
 
-def getSettings(combined_data):
+def getSettings(combined_data, args):
 
     #defaults
     settings = {}
-    settings["RANGE"] = 72 # detection range in inches
+    settings["RANGE"] = args.range # detection range in inches from user
     settings["HUMAN_TEMP_MAX"] = 99 # degrees F
     settings["HUMAN_TEMP_MIN"] = 88 # deg F
     settings["numArrays"] = 0
@@ -85,7 +85,7 @@ def checkForContacts(combined_data, settings):
 	    current_data["chain_end_array"] = array
 	    current_data["chain_begin_sample"] = 0
 
-#    print combined_data[1]["sample"][unicode(20)]["chain_end_time"]	
+#    print combined_data[1]["sample"][unicode(20)]["chain_end_time"]
 
 def checkDuration(combined_data, settings):
     contactCount = 0
@@ -113,7 +113,7 @@ def checkDuration(combined_data, settings):
 		        combined_data[int(current_data["chain_begin_array"])]["sample"][unicode(current_data["chain_begin_sample"])]["chain_end_array"] = array
 			break
 		    elif float(current_data["time"]) - float(combined_data[array]["sample"][unicode(int(reading)-i-1)]["time"]) > .30 and prev_data["contact"] == False:
-				
+
 			#establish as base of next chain
 			contactCount += 1
 			current_data["chain_base"] = True
@@ -155,7 +155,7 @@ def process(args):
     combined_data = combineData(args.directories)
 
     #configure settings
-    settings = getSettings(combined_data)
+    settings = getSettings(combined_data, args)
 
     #Mark each reading whether contact or not
     checkForContacts(combined_data, settings)
@@ -191,6 +191,12 @@ def main():
                               default="info",
                               help="set log output level "
                               "(choices: %(choices)s "
+                              "(default: %(default)s)")
+  subparser_process.add_argument('-r', '--range',
+                              type=int,
+                              default="72",
+                              metavar='',
+                              help="enter default range to take measurements at in inches"
                               "(default: %(default)s)")
 
 
