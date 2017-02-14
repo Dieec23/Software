@@ -184,7 +184,7 @@ def saveData(file_name, json_data):
   #  data = json_data.decode("utf8")
   with open(file_name, "w") as my_file:
     my_file.write(json.dumps(json_data))
-    # json.dumps(json_data, my_file)
+    my_file.flush()
 
   return 1
 
