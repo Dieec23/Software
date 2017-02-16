@@ -138,6 +138,20 @@ def checkDuration(combined_data, settings):
     #return a dictionary with all the important contact information
     return contactDur
 
+
+def decodeTempData(raw_data):
+    temp = {}
+    temp["PTAT"]= 256*raw_data[1]+ raw_data[0] #reference temp inside the sensor
+
+    for i in range(0,15): #4x4 grid of temps
+        #[0] = [1]+[0], [1] = [3]+[2], etc. /10 puts the decimal in place
+        temp[i] = (256*raw_data[2n+3]+raw_data[2n+2])/10 #in deg C with 1/10 deg C precision
+
+    #temp["PEC"] = raw_data[35] #packet error check code, based on SM Bus specification
+
+    return temp
+
+
 def createExcel(contacts, settings):
     wb = Workbook()
 
