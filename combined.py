@@ -21,7 +21,7 @@ def getSettings(combined_data, args):
 
     #defaults
     settings = {}
-    settings["RANGE"] = args.range # detection range in cm from user
+    settings["RADIUS"] = args.radius # detection radius in cm from user
     settings["HUMAN_TEMP_MAX"] = 99 # degrees F
     settings["HUMAN_TEMP_MIN"] = 88 # deg F
     settings["numArrays"] = 0
@@ -72,7 +72,7 @@ def checkForContacts(combined_data, settings):
 
             current_data = combined_data[array]["sample"][reading]
 
-            if float(current_data["dist"]) <= settings["RANGE"] and settings["HUMAN_TEMP_MIN"] <= float(current_data["temp"]) <= settings["HUMAN_TEMP_MAX"]:
+            if float(current_data["dist"]) <= settings["RADIUS"] and settings["HUMAN_TEMP_MIN"] <= float(current_data["temp"]) <= settings["HUMAN_TEMP_MAX"]:
                     logging.debug("Contact Criteria met in array {}, reading {}: {}".format(array, reading, current_data))
                     current_data["contact"] = True
             else:
@@ -145,7 +145,7 @@ def decodeTempData(raw_data):
 
     for i in range(0,15): #4x4 grid of temps
         #[0] = [1]+[0], [1] = [3]+[2], etc. /10 puts the decimal in place
-        temp[i] = (256*raw_data[2*n+3]+raw_data[2*n+2])/10 #in deg C with 1/10 deg C precision
+        temp[i] = (256*raw_data[2*i+3]+raw_data[2*i+2])/10 #in deg C with 1/10 deg C precision
 
     #temp["PEC"] = raw_data[35] #packet error check code, based on SM Bus specification
 
@@ -206,11 +206,11 @@ def main():
                               help="set log output level "
                               "(choices: %(choices)s "
                               "(default: %(default)s)")
-  subparser_process.add_argument('-r', '--range',
+  subparser_process.add_argument('-r', '--radius',
                               type=int,
-                              default="183",
+                              default="183",#6 ft in cm
                               metavar='',
-                              help="enter default range to take measurements at in centimeters"
+                              help="enter default radius to take measurements at in centimeters"
                               "(default: %(default)s)")
 
 

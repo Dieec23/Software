@@ -67,7 +67,8 @@ camera.start_preview()
 readingNum = 0
 now = datetime.now()
 initTime = now.strftime("%H%M%S%f")
-curTime = initTime
+pictureTimer = initTime
+tempTimer = initTime
 print(initTime)
 
 #  JSON storage for variables
@@ -131,6 +132,7 @@ def measure(TRIGGER, ECHO):
   return distance
 
 def measure_average(GPIO_TRIGGER, GPIO_ECHO):
+  #TODO reduce number of decimal places
   # This function takes 3 measurements and
   # returns the smallest distance.
   distance1=measure(GPIO_TRIGGER, GPIO_ECHO)
@@ -170,12 +172,13 @@ def picture(file_path):
 
   return
 
-def getData(now, distance, temp_data):
+def getData(now, distance1, distance2, temp_data):
   # store data in temp dict
   data = {}
   data['time'] = format(now)
-  data['dist'] = format(distance)
-  data['temp'] = format(temp_data)
+  data['dist1'] = format(distance1)
+  data['dist2'] = format(distance2)
+  data['temp'] = temp_data
 
   return data
 
@@ -188,6 +191,17 @@ def saveData(file_name, json_data):
 
   return 1
 
+def decodeTempData(raw_data):
+    temp = {}
+    temp["PTAT"]= 256*raw_data[1]+ raw_data[0] #reference temp inside the sensor
+
+    for i in range(0,15): #4x4 grid of temps
+        #[0] = [1]+[0], [1] = [3]+[2], etc. /10 puts the decimal in place
+        temp[i] = (256*raw_data[2*i+3]+raw_data[2*i+2])/10 #in deg C with 1/10 deg C precision
+
+    #temp["PEC"] = raw_data[35] #packet error check code, based on SM Bus specification
+
+    return temp
 # -----------------------
 # Main Script
 # -----------------------
@@ -210,14 +224,14 @@ try:
     sampleTime = now.strftime("%H%M%S%f")
     print(str(now.strftime("%H:%M:%S.%f")))
     # TODO: Fix time so script doesn't end early!
-    if (int(sampleTime) - int(initTime) > 12000000):
+    if (int(sampleTime) - int(initTime) > 12000000):#shut off after x hours
       break
-    if (int(sampleTime) - int(curTime) >= 60):
-      curTime = now.strftime("%H%M%S%f")
+    if (int(sampleTime) - int(pictureTimer) >= 60):#take picture every 60 ms
+      pictureTimer = now.strftime("%H%M%S%f")
       picture(file_path)
     distance = measure_average(GPIO1_TRIGGER, GPIO1_ECHO)
     distance1 = measure_average(GPIO2_TRIGGER, GPIO2_ECHO)
-    if (int(sampleTime) - int(initTime) > 25):
+    if (int(sampleTime) - int(tempTimer) > 25): #every 25ms take temp
       # TODO: At times OMRON returns -81 bits read
       handle = pi.i2c_open(1, 0x0a)
       result = i2c_bus.write_byte(OMRON_1, 0x4c)
@@ -229,10 +243,10 @@ try:
     print("Bytes read from Omron D6T: " + str(bytes_read))
     print("Data read from Omron D6T : ")
     for x in range(bytes_read):
-      temperature = str(temp_data[x])
       print(temp_data[x])
+    temperature = decodeTempData(temp_data)
 
-    json_data['sample'][format(readingNum)] = getData(now, distance, temperature)
+    json_data['sample'][format(readingNum)] = getData(sampleTime, distance, distance1, temperature)
     saveData(file_name, json_data)
     readingNum += 1
     #  time.sleep(.25)
