@@ -21,7 +21,7 @@ def getSettings(combined_data, args):
 
     #defaults
     settings = {}
-    settings["RANGE"] = args.range # detection range in inches from user
+    settings["RANGE"] = args.range # detection range in cm from user
     settings["HUMAN_TEMP_MAX"] = 99 # degrees F
     settings["HUMAN_TEMP_MIN"] = 88 # deg F
     settings["numArrays"] = 0
@@ -145,7 +145,7 @@ def decodeTempData(raw_data):
 
     for i in range(0,15): #4x4 grid of temps
         #[0] = [1]+[0], [1] = [3]+[2], etc. /10 puts the decimal in place
-        temp[i] = (256*raw_data[2n+3]+raw_data[2n+2])/10 #in deg C with 1/10 deg C precision
+        temp[i] = (256*raw_data[2*n+3]+raw_data[2*n+2])/10 #in deg C with 1/10 deg C precision
 
     #temp["PEC"] = raw_data[35] #packet error check code, based on SM Bus specification
 
@@ -208,9 +208,9 @@ def main():
                               "(default: %(default)s)")
   subparser_process.add_argument('-r', '--range',
                               type=int,
-                              default="72",
+                              default="183",
                               metavar='',
-                              help="enter default range to take measurements at in inches"
+                              help="enter default range to take measurements at in centimeters"
                               "(default: %(default)s)")
 
 
