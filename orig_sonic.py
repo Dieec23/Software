@@ -162,7 +162,7 @@ def measure_average(GPIO_TRIGGER, GPIO_ECHO):
   
   
   #"drop" values of under 6cm and over 2000cm to smooth error collection
-    if ((distance < 6) || (distance > 2000)):
+    if ((distance < 6) or (distance > 2000)):
       distance = 9999
   
   #rounds to whole number
