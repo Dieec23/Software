@@ -159,7 +159,15 @@ def measure_average(GPIO_TRIGGER, GPIO_ECHO):
     else:
       distance = distance3
       return distance
-
+  
+  
+  #"drop" values of under 6cm and over 2000cm to smooth error collection
+    if ((distance < 6) || (distance > 2000)):
+      distance = 9999
+  
+  #rounds to whole number
+  distance = math.round(distance, 0)
+  
   return distance
 
 def picture(file_path):
